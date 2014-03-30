@@ -1,0 +1,202 @@
+\documentclass[serif,mathserif]{beamer}
+
+
+\usepackage{fleqn}
+%%\usepackage{modefs}
+%% \usepackage{math}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amsfonts, epsfig, xspace}
+\usepackage{pstricks,pst-node}
+\usepackage{multimedia}
+\usepackage[normal,tight,center]{subfigure}
+\usepackage{listings}
+\setlength{\subfigcapskip}{-.5em}
+\usepackage{beamerthemesplit}
+\renewcommand\sfdefault{phv}
+\renewcommand\familydefault{\sfdefault}
+\usetheme{default}
+\usepackage{color}
+\useoutertheme{default}
+\usepackage{texnansi}
+\usepackage{marvosym}
+\definecolor{bottomcolour}{rgb}{0.32,0.3,0.38}
+\definecolor{middlecolour}{rgb}{0.08,0.08,0.16}
+\setbeamerfont{title}{size=\Huge}
+\setbeamercolor{structure}{fg=gray}
+\setbeamertemplate{frametitle}[default]%[center]
+\setbeamercolor{normal text}{bg=black, fg=white}
+\setbeamertemplate{background canvas}[vertical shading]
+[bottom=bottomcolour, middle=middlecolour, top=black]
+\setbeamertemplate{items}[circle]
+\setbeamerfont{frametitle}{size=\huge}
+\setbeamertemplate{navigation symbols}{} %no nav symbols
+
+\author[Vinicius Miana]{Vinicius Miana}
+
+\title[Short Title\hspace{2em}\insertframenumber/\inserttotalframenumber]{Tutorial Gerenciamento de Arquivos}
+
+\date{18 de março de 2014} %leave out for today's date to be insterted
+
+\institute{Universidade Presbiteriana Mackenzie}
+
+\begin{document}
+
+
+\lstset{language=[Objective]C,
+  keywordstyle=\color{blue},
+  keywords=[2]{NSFileManager,URLsForDirectory, NSDocumentDirectory, NSUserDomainMask, NSTemporaryDirectory, writeToFile},
+  keywordstyle=[2]\color{orange},
+  stringstyle=\color{red},
+  commentstyle=\color{green},
+  breaklines=true,
+  basicstyle=\footnotesize
+}
+
+\maketitle
+
+\section{Gerenciamento de Arquivos}  
+
+
+\begin{frame}
+  \frametitle{Questão Essencial: Como armazenar dados do seu aplicativo? }
+   Desafio: Criar um app que armazene receitas de cozinha
+   Guiding Questions:
+  \begin{itemize}
+  \item Qual a estrutura de diretórios do iOS? 
+  \item Como acessar os diretórios importantes do seu aplicativo?
+  \item Como fazer a manipulação de arquivos?
+  \item Como salvar objetos?
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Estrutura de Diretórios}
+  \begin{itemize}
+  \item Photos
+  \item Apps
+    \begin{itemize}
+      \item Seu App - Pasta raiz do seu aplicativo
+        \begin{itemize}
+          \item Documents - Conteúdo do usuário - sincronizado via iTunes ou iCloud
+          \item Seu.app - O binário do seu aplicativo
+          \item tmp - Dados temporários - Pasta acessível através de NSTemporaryDirectory  
+          \item Library/Caches - Dados do aplicativo que podem ser recriados se apagado - não sincronizado
+          \item Library/Preferences - preferências do aplicativo - configuráveis em Settings e manipuladas pelo NSUserDefaults
+          \item Library/Application Support - Dados criadoos pelo aplicativo - tem que ser criado manualmente - sincronizado
+        \end{itemize}  
+      \item .... - Outros aplicativos
+    \end{itemize}    
+  \item .... - Outras pastas de sistema
+  \end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+  \frametitle{Acessando diretórios}
+  Atividades
+  \begin{itemize}
+  \item Leia a documentação das classes: NSFileManager, URLSForDirectory, NSSearchPathDomainMask, NSSearchPathDirectory 
+  \item Corrija, execute e identifique o que faz o código abaixo.
+  \end{itemize}
+  \begin{lstlisting}    
+    NSFileManager *fileManager = [[NSFileManager alloc] init];
+    NSArray *urls = [fileManager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask];
+    for(int i = 0; i < [urls count]; i++  ) {
+      NSLog(@"%@", urls[0]);
+    }
+  \end{lstlisting}  
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Manipulação de arquivos}
+  Para gravar NSString, UIImage, NSDictionary, NSArray, NSNumber, NSDate e NSData temos métodos para gravá-lo e recuperá-lo
+  \begin{itemize}
+    \item Pesquise na documentação - Quais métodos são estes?
+    \item Corrija, execute e identifique o que faz o código abaixo.   
+    \item Para pensar, o que fazer com outros tipos de dados, como char, byte, int? (Dica: NSData) 
+  \end{itemize}
+  \begin{lstlisting}
+    NSString *caminho = [NSTemporaryDirectory() stringByAppendingPathComponent:@"MeuArquivo.txt"];
+    NSArray *nomes = @[@"Paz", @"Amor"];
+     OO sultado = [nomes writeToFile:caminho atomically:YES];
+    NSArray *leitura = [[NSArray alloc] initWithContentsOfFile:caminho];
+   if ([leitura count] != [nomes count]) NSLog(@"Falha de leitura");
+    if(!resultado) NSLog(@"Falha de escrita");
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Outras operações}
+    \begin{itemize}
+     \item Concatenando nomes ao caminho: [NSString stringByAppendingPathComponent:...]
+     \item Criando diretórios [NSFileManager createDirectoryAtPath:...]
+     \item Listando o conteúdo de um diretório [NSFileManager contentsOfDirectoryAtPath:...]
+     \item Removendo [NSFileManager removeItemAtPath:....]
+    \end{itemize}
+    Mais uma classe para pesquisar: NSURL -> Guiding Question: Como obter a data de criação de um arquivo?
+\end{frame}  
+
+\begin{frame}
+  \frametitle{Armazenando Objetos}
+  \begin{itemize}
+  \item Como formatar objetos para gravação em arquivo? (Árvore ou Grafo) -> (Array) 
+  \item Marshalling e Unmarshalling - o que é isso?
+  \item NSKeyedArchiver e NSKeyedUnarchiver
+  \item Como tornar possível o Marshalling e Unmarshalling de objetos? 
+  \end{itemize}
+  Verificar o protocolo NSCoding
+\end{frame}  
+
+
+\begin{frame}[fragile]
+  \frametitle{Usando o protocolo NSCoding}
+  Marshalling
+  \begin{lstlisting}
+    -(void)encodeWithCode:(NSCoder*)aCoder {
+      [aCoder encodeObject:atributo forKey:@"atributo"];
+      // fazer isso para todos os atributos
+    }
+  \end{lstlisting}
+  Unmarshalling
+  \begin{lstlisting}    
+    -(id)initWithCoder:(NSCoder*)aDecoder {
+      self = [super init];
+      if(self) {
+         [self setAtributo:[aCoder decodeObjectForKey:@"atributo"]];
+         // fazer isso para todos os atributos
+      }
+      return self;
+    }
+  \end{lstlisting}  
+\end{frame}
+
+
+
+\begin{frame}
+    \frametitle{Juntando tudo}
+    Os objetos podems ser armazenados através e recuperados através de:
+    \begin{itemize}
+    \item [NSKeyedArchiver archiveRootObject:objeto toFile:pathParaOArquivo];
+    \item objeto = [NSKeyedUnarchiver unarchiveObjectWithFile:pathParaOArquivo];
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{O desafio - Criar um app que armazena receitas}
+  \begin{itemize}
+  \item Fork e Clone o projeto do github
+  \item BRONZE - Corrija o programa para poder guardar corretamente os ingredientes.
+  \item PRATA - Altere o programa para poder guardar várias receitas.
+  \item OURO - 
+  \end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Questions}
+\end{frame}
+\end{document}
